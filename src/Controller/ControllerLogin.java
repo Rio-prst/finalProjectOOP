@@ -42,8 +42,8 @@ public class ControllerLogin {
                 ViewDashboardPM dashboardPM = new ViewDashboardPM();
                 dashboardPM.setVisible(true);
             } else {
-                // Jika role-nya Developer atau Designer, buka dashboard member biasa
-                ViewDashboardMember dashboardMember = new ViewDashboardMember();
+                // PERUBAHAN DI SINI: Kirim userValid ke dalam constructor ViewDashboardMember
+                ViewDashboardMember dashboardMember = new ViewDashboardMember(userValid);
                 dashboardMember.setVisible(true);
             }
         } else {

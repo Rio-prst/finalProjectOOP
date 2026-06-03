@@ -5,7 +5,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class ModelTableTask extends AbstractTableModel {
     private List<ModelTask> daftarTask;
-    private String kolom[] = {"ID", "Judul Tugas", "Status", "Tipe Tugas", "Lampiran"};
+    private String kolom[] = {"No", "Judul Tugas", "Status", "Tipe Tugas", "Deadline", "Lampiran"};
     
     public ModelTableTask(List<ModelTask> daftarTask) {
         this.daftarTask = daftarTask;
@@ -13,20 +13,31 @@ public class ModelTableTask extends AbstractTableModel {
 
     @Override
     public int getRowCount() { return daftarTask.size(); }
-
     @Override
     public int getColumnCount() { return kolom.length; }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex) {
-            case 0: return daftarTask.get(rowIndex).getId();
-            case 1: return daftarTask.get(rowIndex).getJudul();
-            case 2: return daftarTask.get(rowIndex).getStatus();
-            case 3: return daftarTask.get(rowIndex).getTipeTugas();
-            case 4: return daftarTask.get(rowIndex).getLampiranSpesifik();
-            default: return null;
+            case 0: 
+                return rowIndex + 1; 
+            case 1: 
+                return daftarTask.get(rowIndex).getJudul();
+            case 2: 
+                return daftarTask.get(rowIndex).getStatus(); 
+            case 3: 
+                return daftarTask.get(rowIndex).getTipeTugas();
+            case 4: 
+                return daftarTask.get(rowIndex).getDeadline();
+            case 5: 
+                return daftarTask.get(rowIndex).getLampiranSpesifik(); 
+            default: 
+                return null;
         }
+    }
+
+    public int getActualId(int rowIndex) {
+        return daftarTask.get(rowIndex).getId();
     }
     
     @Override

@@ -2,65 +2,50 @@ package Controller;
 
 import Model.Task.*;
 import View.Dashboard.ViewDashboardPM;
-import View.Dashboard.ViewDashboardMember;
-
 import java.util.List;
 import javax.swing.JOptionPane;
 
 public class ControllerTask {
 
     private ViewDashboardPM viewPM;
-    private ViewDashboardMember viewMember;
-
     private InterfaceDAOTask daoTask;
     private List<ModelTask> listTask;
+    private int currentProjectId = -1; // Menyimpan ID proyek yang sedang dipilih
 
-    // =========================
-    // CONSTRUCTOR PM
-    // =========================
     public ControllerTask(ViewDashboardPM view) {
         this.viewPM = view;
         this.daoTask = new DAOTask();
     }
 
-    // =========================
-    // CONSTRUCTOR MEMBER
-    // =========================
-    public ControllerTask(ViewDashboardMember view) {
-        this.viewMember = view;
-        this.daoTask = new DAOTask();
-    }
-
-    // =========================
-    // RENDER TABLE
-    // =========================
-    public void renderTable() {
-
-        listTask = daoTask.getAll();
+    // Mengubah fungsi render agar wajib menerima ID Proyek yang aktif
+    public void renderTable(int projectId) {
+        this.currentProjectId = projectId;
+        
+        // Panggil fungsi DAO yang sudah kamu modifikasi untuk filter berdasar Project ID
+        // Contoh: listTask = daoTask.getTasksByProjectId(projectId);
+        listTask = daoTask.getAll(); // SEMENTARA: Ganti dengan fungsi filter proyekmu jika DAO sudah siap
+        
         ModelTableTask model = new ModelTableTask(listTask);
-
-        if (viewPM != null) {
-            viewPM.getTabelTugas().setModel(model);
-        }
-
-        if (viewMember != null) {
-            viewMember.getTabelTugas().setModel(model);
-        }
+        viewPM.getTabelTugas().setModel(model);
     }
 
-    // =========================
-    // INSERT TASK (ONLY PM)
-    // =========================
     public void insertTask() {
-
-        if (viewPM == null) return;
+        if (currentProjectId == -1) {
+            JOptionPane.showMessageDialog(viewPM, "Pilih Proyek terlebih dahulu di Tab Project!");
+            return;
+        }
 
         String judul = viewPM.getTxtJudul().getText();
         String tipe = viewPM.getCbTipe().getSelectedItem().toString();
+        String deadline = viewPM.getTxtDeadlineTask().getText();
         String lampiran = viewPM.getTxtLampiran().getText();
 
-        ModelTask task;
+        if (judul.isEmpty() || deadline.isEmpty()) {
+            JOptionPane.showMessageDialog(viewPM, "Judul dan Deadline wajib diisi!");
+            return;
+        }
 
+        ModelTask task;
         if (tipe.equalsIgnoreCase("DEVELOPMENT")) {
             DevelopmentTask dev = new DevelopmentTask();
             dev.setRepositoryUrl(lampiran);
@@ -71,44 +56,52 @@ public class ControllerTask {
             task = des;
         }
 
-        task.setProjectId(1);
-        task.setUserId(2);
+        task.setProjectId(currentProjectId); // Set dinamis berdasarkan proyek yang dipilih!
+        task.setUserId(tipe.equalsIgnoreCase("DEVELOPMENT") ? 2 : 3);
         task.setJudul(judul);
+        task.setDeadline(deadline);
         task.setStatus("To Do");
 
         daoTask.insert(task);
-
-        JOptionPane.showMessageDialog(viewPM, "Task berhasil ditambahkan!");
-
-        renderTable();
+        JOptionPane.showMessageDialog(viewPM, "Task berhasil ditambahkan ke Proyek ini!");
+        renderTable(currentProjectId);
+        clearForm();
     }
 
-    // =========================
-    // MARK AS DONE (PM & MEMBER)
-    // =========================
+    // MENERIMA AKSI DARI POP-UP JDIALOG EDIT FORM
+    public void updateTask(int idAsli, String judul, String deadline, String lampiran) {
+        try {
+            String query = "UPDATE tasks SET judul=?, deadline=?, lampiran_spesifik=? WHERE id=?;";
+            java.sql.PreparedStatement st = Config.Connector.Connect().prepareStatement(query);
+            st.setString(1, judul);
+            st.setString(2, deadline);
+            st.setString(3, lampiran);
+            st.setInt(4, idAsli);
+            st.executeUpdate();
+            st.close();
+            
+            JOptionPane.showMessageDialog(viewPM, "Task berhasil diperbarui!");
+            renderTable(currentProjectId);
+        } catch (Exception e) {
+            System.out.println("Update Task Error: " + e.getMessage());
+        }
+    }
+
     public void markAsDone(int id) {
-
         daoTask.updateStatus(id, "Done");
-
-        JOptionPane.showMessageDialog(
-                (viewPM != null ? viewPM : viewMember),
-                "Task berhasil diselesaikan!"
-        );
-
-        renderTable();
+        JOptionPane.showMessageDialog(viewPM, "Task diselesaikan!");
+        renderTable(currentProjectId);
     }
 
-    // =========================
-    // DELETE TASK (ONLY PM)
-    // =========================
     public void deleteTask(int id) {
-
-        if (viewPM == null) return;
-
         daoTask.delete(id);
-
         JOptionPane.showMessageDialog(viewPM, "Task berhasil dihapus!");
-
-        renderTable();
+        renderTable(currentProjectId);
+    }
+    
+    private void clearForm() {
+        viewPM.getTxtJudul().setText("");
+        viewPM.getTxtDeadlineTask().setText("");
+        viewPM.getTxtLampiran().setText("");
     }
 }

@@ -7,6 +7,7 @@ public class ModelTask {
     protected String judul;
     protected String status;
     protected String tipeTugas;
+    protected String deadline;
 
     public String getLampiranSpesifik() {
         return "-";
@@ -58,5 +59,13 @@ public class ModelTask {
     
     public void setTipeTugas(String tipeTugas) {
         this.tipeTugas = tipeTugas;
+    }
+    
+    public String getDeadline() { 
+       return deadline;
+    }
+    
+    public void setDeadline(String deadline) {
+        this.deadline = deadline;
     }
 }

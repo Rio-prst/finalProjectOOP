@@ -1,12 +1,19 @@
 package Main;
 
-import View.Login.ViewLogin;
+import View.Login.ViewStart;
+import Config.Connector;
+
+import javax.swing.SwingUtilities;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        // Jalankan aplikasi dari login
-        new ViewLogin().setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+
+            Connector.Connect();
+            
+            new ViewStart().setVisible(true);
+        });
     }
 }
